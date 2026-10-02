@@ -1,5 +1,4 @@
-// Configuração da URL da API Backend
-const API_BASE_URL = 'https://upswing-preppy-fanning.ngrok-free.dev';
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 let severityChartInstance = null;
 let amountChartInstance = null;
@@ -17,7 +16,6 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Feedback visual: exibe a mensagem de status e desabilita o botão
     statusMsg.classList.remove('hidden', 'text-red-400', 'text-emerald-400');
     statusMsg.classList.add('text-slate-400');
     statusMsg.textContent = 'Enviando arquivo e executando algoritmos de auditoria...';
@@ -26,16 +24,25 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/audit/process`, {
             method: 'POST',
+            headers: {
+                'ngrok-skip-browser-warning': 'true'
+            },
             body: formData
         });
 
-        if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.detail || 'Falha no processamento do arquivo.');
+        const rawText = await response.text();
+        let result;
+
+        try {
+            result = JSON.parse(rawText);
+        } catch (jsonErr) {
+            throw new Error(`Resposta inválida do servidor (${response.status}): ${rawText.substring(0, 120)}`);
         }
 
-        const result = await response.json();
-        
+        if (!response.ok) {
+            throw new Error(result.detail || `Erro HTTP ${response.status}`);
+        }
+
         statusMsg.classList.add('text-emerald-400');
         statusMsg.textContent = `Arquivo ${result.filename} auditado com sucesso!`;
 
@@ -52,7 +59,6 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
 function renderDashboard(result) {
     const data = result.data;
 
-    // 1. Exibir seções ocultas com animação
     const sections = ['kpiSection', 'chartsSection', 'tableSection'];
     sections.forEach(id => {
         const el = document.getElementById(id);
@@ -60,7 +66,6 @@ function renderDashboard(result) {
         el.classList.add('animate-fade-in');
     });
 
-    // 2. Calcular KPIs
     const totalProc = result.total_records;
     const flagged = data.filter(item => item.is_flagged);
     const critical = data.filter(item => item.severity === 'CRITICAL');
@@ -71,11 +76,10 @@ function renderDashboard(result) {
     document.getElementById('kpiCritical').textContent = critical.length;
     document.getElementById('kpiRisk').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(riskVal);
 
-    // 3. Atualizar URL de Download
+    // Atualização da URL de download com a rota gerada pelo backend
     const downloadBtn = document.getElementById('downloadBtn');
     downloadBtn.href = `${API_BASE_URL}${result.excel_report_url}`;
 
-    // 4. Renderizar Tabela de Forma Segura (Prevenção de XSS)
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
 
@@ -83,7 +87,6 @@ function renderDashboard(result) {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/30 transition-colors';
 
-        // Criação de células utilizando elementos DOM para mitigar injeção de scripts
         const tdId = document.createElement('td');
         tdId.className = 'px-4 py-3 font-mono text-slate-400';
         tdId.textContent = row.id;
@@ -125,7 +128,6 @@ function renderDashboard(result) {
         tbody.appendChild(tr);
     });
 
-    // 5. Renderizar Gráficos
     renderCharts(data);
 }
 

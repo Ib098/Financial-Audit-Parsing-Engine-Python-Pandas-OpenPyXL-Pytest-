@@ -14,7 +14,7 @@ app = FastAPI(
     description="API REST para ingestão, parsing e auditoria financeira."
 )
 
-# Liberação de CORS
+# Liberação de CORS para permitir requisições do GitHub Pages
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -53,11 +53,13 @@ async def process_file(file: UploadFile = File(...)):
         reporter.export_to_json(audited_data, filename=f"audit_{file.filename}.json")
         excel_path = reporter.export_to_excel(audited_data, filename=f"audit_{file.filename}.xlsx")
 
+        # Retorno compatível com Streamlit (app.py) e Web Client (docs/app.js)
         return {
             "status": "success",
             "filename": file.filename,
             "total_records": len(audited_data),
             "excel_filename": excel_path.name,
+            "excel_report_url": f"/api/v1/audit/download/{excel_path.name}",
             "data": audited_data
         }
 
@@ -75,17 +77,3 @@ async def download_excel(filename: str):
         filename=filename,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-# api.py
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI(...)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Permite requisições de qualquer origem (incluindo *.github.io)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
