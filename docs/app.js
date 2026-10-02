@@ -1,6 +1,4 @@
-// Definição da URL da API Backend
-// Em ambiente local: 'http://127.0.0.1:8000'
-// Em produção (Render/Koyeb): 'https://seu-backend.onrender.com'
+// Configuração da URL da API Backend
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 let severityChartInstance = null;
@@ -19,7 +17,7 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Feedback de Carregamento
+    // Feedback visual: exibe a mensagem de status e desabilita o botão
     statusMsg.classList.remove('hidden', 'text-red-400', 'text-emerald-400');
     statusMsg.classList.add('text-slate-400');
     statusMsg.textContent = 'Enviando arquivo e executando algoritmos de auditoria...';
@@ -54,18 +52,13 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
 function renderDashboard(result) {
     const data = result.data;
 
-    // Exibir seções com animação de fade-in
+    // 1. Exibir seções ocultas com animação
     const sections = ['kpiSection', 'chartsSection', 'tableSection'];
     sections.forEach(id => {
         const el = document.getElementById(id);
         el.classList.remove('hidden');
         el.classList.add('animate-fade-in');
     });
-
-    // 1. Exibir Seções
-    document.getElementById('kpiSection').classList.remove('hidden');
-    document.getElementById('chartsSection').classList.remove('hidden');
-    document.getElementById('tableSection').classList.remove('hidden');
 
     // 2. Calcular KPIs
     const totalProc = result.total_records;
@@ -82,7 +75,7 @@ function renderDashboard(result) {
     const downloadBtn = document.getElementById('downloadBtn');
     downloadBtn.href = `${API_BASE_URL}${result.excel_report_url}`;
 
-    // 4. Renderizar Tabela
+    // 4. Renderizar Tabela de Forma Segura (Prevenção de XSS)
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
 
@@ -90,38 +83,59 @@ function renderDashboard(result) {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/30 transition-colors';
 
-        let sevBadge = '';
-        if (row.severity === 'CRITICAL') sevBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">CRITICAL</span>';
-        else if (row.severity === 'WARNING') sevBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">WARNING</span>';
-        else sevBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">INFO</span>';
+        // Criação de células utilizando elementos DOM para mitigar injeção de scripts
+        const tdId = document.createElement('td');
+        tdId.className = 'px-4 py-3 font-mono text-slate-400';
+        tdId.textContent = row.id;
 
-        tr.innerHTML = `
-            <td class="px-4 py-3 font-mono text-slate-400">${row.id}</td>
-            <td class="px-4 py-3">${row.date || 'N/A'}</td>
-            <td class="px-4 py-3 font-medium text-slate-200">${row.description}</td>
-            <td class="px-4 py-3 text-right font-mono ${row.amount < 0 ? 'text-red-400' : 'text-slate-200'}">
-                ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(row.amount)}
-            </td>
-            <td class="px-4 py-3">${sevBadge}</td>
-            <td class="px-4 py-3 text-slate-400">${row.anomalies.join(', ') || '-'}</td>
-        `;
+        const tdDate = document.createElement('td');
+        tdDate.className = 'px-4 py-3';
+        tdDate.textContent = row.date || 'N/A';
+
+        const tdDesc = document.createElement('td');
+        tdDesc.className = 'px-4 py-3 font-medium text-slate-200';
+        tdDesc.textContent = row.description;
+
+        const tdAmount = document.createElement('td');
+        tdAmount.className = `px-4 py-3 text-right font-mono ${row.amount < 0 ? 'text-red-400' : 'text-slate-200'}`;
+        tdAmount.textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(row.amount);
+
+        const tdSeverity = document.createElement('td');
+        tdSeverity.className = 'px-4 py-3';
+        const badge = document.createElement('span');
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold border';
+        
+        if (row.severity === 'CRITICAL') {
+            badge.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
+            badge.textContent = 'CRITICAL';
+        } else if (row.severity === 'WARNING') {
+            badge.classList.add('bg-yellow-500/10', 'text-yellow-400', 'border-yellow-500/20');
+            badge.textContent = 'WARNING';
+        } else {
+            badge.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+            badge.textContent = 'INFO';
+        }
+        tdSeverity.appendChild(badge);
+
+        const tdAnomalies = document.createElement('td');
+        tdAnomalies.className = 'px-4 py-3 text-slate-400';
+        tdAnomalies.textContent = Array.isArray(row.anomalies) && row.anomalies.length > 0 ? row.anomalies.join(', ') : '-';
+
+        tr.append(tdId, tdDate, tdDesc, tdAmount, tdSeverity, tdAnomalies);
         tbody.appendChild(tr);
     });
 
-    // 5. Renderizar Gráficos (Chart.js)
+    // 5. Renderizar Gráficos
     renderCharts(data);
 }
 
 function renderCharts(data) {
-    // Destruir instâncias anteriores se existirem
     if (severityChartInstance) severityChartInstance.destroy();
     if (amountChartInstance) amountChartInstance.destroy();
 
-    // Contagem de Severidades
     const sevCounts = { INFO: 0, WARNING: 0, CRITICAL: 0 };
     data.forEach(item => { if (sevCounts[item.severity] !== undefined) sevCounts[item.severity]++; });
 
-    // Chart 1: Donut (Severidade)
     const ctx1 = document.getElementById('severityChart').getContext('2d');
     severityChartInstance = new Chart(ctx1, {
         type: 'doughnut',
@@ -140,7 +154,6 @@ function renderCharts(data) {
         }
     });
 
-    // Chart 2: Bar (Valores)
     const ctx2 = document.getElementById('amountChart').getContext('2d');
     amountChartInstance = new Chart(ctx2, {
         type: 'bar',
