@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Audit & Parsing Engine</title>
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkbg text-slate-100 min-h-screen font-sans antialiased">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">📊</span>
+                <h1 class="font-bold text-xl tracking-tight">Financial Audit <span class="text-blue-500">Engine</span></h1>
+            </div>
+            <span class="text-xs bg-slate-800 text-slate-400 px-3 py-1 rounded-full border border-slate-700">v2.0.0 Static Client</span>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+        <!-- Input Section -->
+        <section class="bg-cardbg border border-slate-800 rounded-xl p-6 shadow-xl">
+            <h2 class="text-lg font-semibold mb-4 text-slate-200">Painel de Ingestão de Dados</h2>
+            <form id="auditForm" class="flex flex-col sm:flex-row gap-4 items-center">
+                <input type="file" id="fileInput" accept=".txt,.csv" required
+                    class="block w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer bg-slate-900/50 rounded-lg border border-slate-700">
+                <button type="submit" id="submitBtn"
+                    class="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm rounded-lg transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                    <span>🚀 Executar Auditoria</span>
+                </button>
+            </form>
+            <p id="statusMsg" class="mt-3 text-xs text-slate-400 hidden"></p>
+        </section>
+
+        <!-- KPI Metrics (Hidden by default) -->
+        <section id="kpiSection" class="grid grid-cols-1 md:grid-cols-4 gap-4 hidden">
+            <div class="bg-cardbg border border-slate-800 p-5 rounded-xl">
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Transações Processadas</p>
+                <p id="kpiTotal" class="text-3xl font-bold text-white mt-2">0</p>
+            </div>
+            <div class="bg-cardbg border border-slate-800 p-5 rounded-xl">
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sinalizadas (Flagged)</p>
+                <p id="kpiFlagged" class="text-3xl font-bold text-yellow-500 mt-2">0</p>
+            </div>
+            <div class="bg-cardbg border border-slate-800 p-5 rounded-xl">
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Anomalias Críticas</p>
+                <p id="kpiCritical" class="text-3xl font-bold text-red-500 mt-2">0</p>
+            </div>
+            <div class="bg-cardbg border border-slate-800 p-5 rounded-xl">
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Volume em Risco</p>
+                <p id="kpiRisk" class="text-3xl font-bold text-blue-400 mt-2">R$ 0,00</p>
+            </div>
+        </section>
+
+        <!-- Charts Section (Hidden by default) -->
+        <section id="chartsSection" class="grid grid-cols-1 lg:grid-cols-2 gap-6 hidden">
+            <div class="bg-cardbg border border-slate-800 p-6 rounded-xl">
+                <h3 class="text-md font-semibold text-slate-200 mb-4">Distribuição por Severidade</h3>
+                <div class="h-64 flex justify-center">
+                    <canvas id="severityChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-cardbg border border-slate-800 p-6 rounded-xl">
+                <h3 class="text-md font-semibold text-slate-200 mb-4">Valores por Transação</h3>
+                <div class="h-64">
+                    <canvas id="amountChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Download & Table Section (Hidden by default) -->
+        <section id="tableSection" class="bg-cardbg border border-slate-800 rounded-xl p-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h3 class="text-md font-semibold text-slate-200">Detalhamento dos Registros Auditados</h3>
+                <a id="downloadBtn" href="#" target="_blank"
+                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-2">
+                    <span>📥 Baixar Relatório (.xlsx)</span>
+                </a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900/60 uppercase text-slate-400 border-b border-slate-800">
+                        <tr>
+                            <th class="px-4 py-3">ID</th>
+                            <th class="px-4 py-3">Data</th>
+                            <th class="px-4 py-3">Descrição</th>
+                            <th class="px-4 py-3 text-right">Valor (R$)</th>
+                            <th class="px-4 py-3">Severidade</th>
+                            <th class="px-4 py-3">Anomalias</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-800/50"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

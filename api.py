@@ -75,3 +75,17 @@ async def download_excel(filename: str):
         filename=filename,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+# api.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(...)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite requisições de qualquer origem (incluindo *.github.io)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
