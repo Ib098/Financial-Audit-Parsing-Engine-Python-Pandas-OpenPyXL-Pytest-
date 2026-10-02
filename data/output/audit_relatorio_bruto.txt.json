@@ -1,0 +1,57 @@
+[
+    {
+        "line_number": 2,
+        "id": "TX1001",
+        "date": "2026-10-01",
+        "description": "Venda Licenca Soft",
+        "amount": 1500.0,
+        "is_flagged": false,
+        "anomalies_count": 0,
+        "anomalies": "OK",
+        "severity": "INFO"
+    },
+    {
+        "line_number": 3,
+        "id": "TX1002",
+        "date": "2026-10-01",
+        "description": "Estorno Invalido",
+        "amount": -250.0,
+        "is_flagged": true,
+        "anomalies_count": 1,
+        "anomalies": "SUSPICIOUS_NEGATIVE_VALUE",
+        "severity": "CRITICAL"
+    },
+    {
+        "line_number": 4,
+        "id": "TX1003",
+        "date": "2026-10-02",
+        "description": "Servico Consultoria",
+        "amount": 3200.5,
+        "is_flagged": true,
+        "anomalies_count": 1,
+        "anomalies": "HIGH_VALUE_EXCEEDED",
+        "severity": "WARNING"
+    },
+    {
+        "line_number": 5,
+        "id": "TX1001",
+        "date": "2026-10-02",
+        "description": "Transacao Duplicada",
+        "amount": 1500.0,
+        "is_flagged": true,
+        "anomalies_count": 1,
+        "anomalies": "DUPLICATE_TRANSACTION_ID",
+        "severity": "CRITICAL"
+    },
+    {
+        "line_number": 6,
+        "id": "TX1004",
+        "date": "2026-10-03",
+        "description": "Lancamento Nulo",
+        "amount": 0.0,
+        "is_flagged": true,
+        "anomalies_count": 2,
+        "anomalies": "ZERO_VALUE_TRANSACTION, FUTURE_DATE_TRANSACTION",
+        "severity": "WARNING"
+    }
+]
