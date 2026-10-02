@@ -1,5 +1,5 @@
 // Configuração da URL da API Backend
-const API_BASE_URL = 'http://127.0.0.1:4040';
+const API_BASE_URL = 'https://upswing-preppy-fanning.ngrok-free.dev';
 
 let severityChartInstance = null;
 let amountChartInstance = null;
