@@ -1,0 +1,6 @@
+# RELATORIO BRUTO DE TRANSACIONAL - SENSOR/FIN
+TX1001 ; 2026-10-01 ; Venda Licenca Soft ; R$ 1.500,00
+TX1002 ; 2026-10-01 ; Estorno Invalido   ; R$ -250,00
+TX1003 ; 2026-10-02 ; Servico Consultoria; 3200,50
+TX1001 ; 2026-10-02 ; Transacao Duplicada; R$ 1.500,00
+TX1004 ; 2026-10-03 ; Lancamento Nulo    ; R$ 0,00
