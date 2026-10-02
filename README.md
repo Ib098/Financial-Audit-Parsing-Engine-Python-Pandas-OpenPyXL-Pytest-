@@ -1,6 +1,8 @@
 # Financial Audit & Parsing Engine
 
-Motor de processamento e auditoria automatizada para dados financeiros desestruturados. 
+Plataforma Full-Stack de alta performance para **ingestão, parsing, auditoria lógica e detecção de anomalias** em relatórios e extratos financeiros desestruturados.
+
+Evoluída de um motor de processamento em lote para uma arquitetura distribuída e desacoplada, a solução oferece uma **API REST assíncrona** em **FastAPI**, um **Dashboard Executivo** interativo em **Streamlit**, relatórios estilizados em **Excel/JSON** e orquestração pronta via **Docker Compose**.
 
 ## Funcionalidades
 - Ingestão e higienização de ficheiros de texto brutos (`.txt`, `.csv`).
@@ -8,8 +10,23 @@ Motor de processamento e auditoria automatizada para dados financeiros desestrut
 - Auditoria lógica para deteção de duplicidades, inconformidades de datas e lançamentos negativos.
 - Exportação em relatórios executivos Excel e objetos JSON padronizados.
 
-## Como Executar
-1. Clonar o repositório e ativar o ambiente virtual.
-2. Instalar dependências: `pip install -r requirements.txt`
-3. Adicionar o ficheiro de entrada em `data/raw/relatorio_bruto.txt`
-4. Executar a esteira: `python main.py`
+## 📐 Arquitetura do Sistema
+
+A aplicação adota o padrão de arquitetura desacoplada (*Decoupled Architecture*), separando a inteligência de negócios e auditoria da camada de apresentação:
+
+```text
+[ Arquivo Bruto (.txt/.csv) ]
+             │
+             ▼
+ ┌──────────────────────┐      HTTP / REST      ┌──────────────────────┐
+ │   Dashboard Web      │ ────────────────────► │     API Backend      │
+ │     (Streamlit)      │ ◄──────────────────── │      (FastAPI)       │
+ └──────────────────────┘      JSON Payload     └──────────┬───────────┘
+            │                                              │
+            │ Download (.xlsx)                             ▼
+            └─────────────────────────────── ┌──────────────────────────┐
+                                             │ Core Engine (src/)       │
+                                             │  ├─ FinancialParser      │
+                                             │  ├─ FinancialAuditor     │
+                                             │  └─ FinancialReporter    │
+                                             └──────────────────────────┘
