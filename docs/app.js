@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://variety-ambassador-respiratory-skiing.trycloudflare.com';
 
 let severityChartInstance = null;
 let amountChartInstance = null;
@@ -22,11 +22,9 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
     submitBtn.disabled = true;
 
     try {
+        // O cabeçalho obsoleto do ngrok foi removido para garantir a integridade da requisição
         const response = await fetch(`${API_BASE_URL}/api/v1/audit/process`, {
             method: 'POST',
-            headers: {
-                'ngrok-skip-browser-warning': 'true'
-            },
             body: formData
         });
 
@@ -76,7 +74,6 @@ function renderDashboard(result) {
     document.getElementById('kpiCritical').textContent = critical.length;
     document.getElementById('kpiRisk').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(riskVal);
 
-    // Atualização da URL de download com a rota gerada pelo backend
     const downloadBtn = document.getElementById('downloadBtn');
     downloadBtn.href = `${API_BASE_URL}${result.excel_report_url}`;
 
