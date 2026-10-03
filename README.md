@@ -7,52 +7,49 @@ API REST e pipeline de ingestão, sanitização e auditoria sintática/lógica d
 ## 🏛️ Arquitetura e Fluxo de Dados
 
 1. **Ingestão:** Recebimento do arquivo bruto via endpoint REST `/api/v1/audit/process`.
-2. **Parsing:** Leitura e sanitização dos registros sintáticos (`src/parser.py`).
+2. **Parsing:** Leitura dinâmica com sniffer de delimitadores e sanitização dos registros sintáticos (`src/parser.py`).
 3. **Auditoria:** Aplicação de regras de compliance e limites financeiros (`src/auditor.py`).
 4. **Relatórios:** Exportação para `.json` e `.xlsx` (`src/reporter.py`).
-5. **Consumo:** Disponibilização dos dados via cliente Web estático (HTML/JS) e Dashboard Streamlit.
+5. **Consumo:** Disponibilização dos dados via Dashboard Streamlit isolado.
 
 ---
 
 ## 🟢 Implementações Convalidadas (O que deu certo)
 
-- [x] **Ingestão Multi-formato:** Suporte a parsing e validação de estruturas de arquivos `.txt` e `.csv`.
-- [x] **Arquitetura Dual de Frontend:** Suporte simultâneo para consumo via cliente Web estático (`docs/app.js`) e interface Streamlit (`app.py`).
-- [x] **Contrato de API Resiliente:** Padronização da resposta JSON contendo tanto a rota REST (`excel_report_url`) quanto a referência direta do arquivo (`excel_filename`), prevenindo regressões e `KeyError`.
-- [x] **Exportação de Relatórios:** Geração automática e dinâmica de planilhas Excel formatadas e arquivos JSON auditados na pasta `data/output/`.
-- [x] **Configuração CORS:** Middleware FastAPI ajustado para permitir chamadas cross-origin em ambientes de desenvolvimento local e páginas estáticas.
+- [x] **Conteinerização Integral:** Orquestração da arquitetura dual (FastAPI e Streamlit) via `docker-compose`, utilizando imagem otimizada (`python:3.12-slim`) e mapeamento de volumes para persistência de relatórios locais.
+- [x] **Parsing Universal com Sniffer:** Refatoração do `FinancialParser` para detecção automática de delimitadores (`|`, `;`, `,`, tabulações) e extração tolerante a falhas em layouts industriais sujos ou arquivos sem cabeçalho padronizado.
+- [x] **Túnel de Tráfego Cloudflare:** Adoção do `cloudflared` em substituição ao ngrok, garantindo exposição pública do dashboard sem interceptação de telas de aviso (*browser-warning*), contornando bloqueios de origin.
+- [x] **Blindagem de Frontend:** Implementação de bloqueios lógicos (*fail-fast*) no Streamlit, interceptando listas de dados vazias antes da renderização de matrizes para prevenir exceções críticas de chave (`KeyError`).
+- [x] **Contrato de API Resiliente:** Padronização da resposta JSON contendo tanto a rota REST (`excel_report_url`) quanto a referência direta do arquivo (`excel_filename`).
 
 ---
 
-## 🔴 Falhas e Limitações Catalogadas (A reavaliar com rigor)
+## 🔴 Falhas Históricas e Resoluções Arquiteturais
 
-### 1. Túneis de Desenvolvimento via ngrok (Conta Gratuita)
-- **Problema:** O ngrok injeta uma página HTML intermediária (*browser-warning*) para novas conexões, o que faz com que chamadas `fetch` no frontend recebam HTML em vez do JSON esperado, gerando o erro `Unexpected end of JSON input`. Além disso, navegações com bloqueadores estritos (ex: Brave Shields) bloqueiam o tráfego por segurança.
-- **Solução Paliativa Atual:** Testes locais via **Live Server** (`http://127.0.0.1:5500`) diretamente integrados ao FastAPI (`http://127.0.0.1:8000`).
-- **Hipótese para Reavaliação Futura:** Avaliar a transição para **Cloudflare Tunnels (`cloudflared`)** ou a adição compulsória do cabeçalho `ngrok-skip-browser-warning: true` no cliente HTTP em ambiente de staging.
+### 1. Obsolescência do Ngrok em Aplicações Cliente-Servidor
+- **Diagnóstico Prévio:** O uso do ngrok em contas gratuitas injetava HTML intermediário nas respostas, corrompendo o parsing JSON no cliente web estático (`Unexpected end of JSON input`).
+- **Resolução Aplicada:** A transição para o **Cloudflare Tunnel** provou-se o método mais ortodoxo e eficaz para túneis efêmeros, restabelecendo a integridade do protocolo HTTPS sem injeção de payloads de terceiros.
 
-### 2. Acoplamento do Formato da Resposta no Cliente
-- **Problema:** A quebra do contrato JSON entre rotas gerou exceções de chave (`KeyError`) no Streamlit quando o nome dos campos foi alterado unilateralmente.
-- **Hipótese para Reavaliação Futura:** Implementar esquemas estritos de validação de dados via **Pydantic Schemas / DTOs** para garantir a tipagem e os campos do contrato de resposta da API antes do envio.
+### 2. Acoplamento Restrito de Contratos de Dados (A reavaliar)
+- **Diagnóstico Prévio:** Alterações nos nomes das chaves retornadas pelo backend geravam falhas em cascata no Streamlit. Embora a verificação `if not records` tenha mitigado o colapso estrutural, o contrato ainda não possui tipagem estrita.
+- **Hipótese para Reavaliação Futura:** Implementar esquemas estritos de validação via **Pydantic Schemas / DTOs** para garantir a inviolabilidade da tipagem de resposta da API antes da transmissão ao cliente.
 
 ---
 
 ## 🧪 Backlog & Ideias Não Testadas (Roadmap)
 
-- [ ] **Processamento Assíncrono em Lote:** Implementação de fila de tarefas (Celery + Redis ou FastAPI Background Tasks) para processamento de arquivos `.txt` com mais de 100 mil linhas sem travar a thread principal.
-- [ ] **Detecção de Anomalias Estatísticas (ML):** Introdução de algoritmos de agrupamento (*Isolation Forest* ou *Z-Score*) no módulo `auditor.py` para identificar padrões suspeitos além de regras fixas de valor limite (*threshold*).
-- [ ] **Suíte de Testes Automatizados:** Implementação de testes unitários e de integração com `pytest` para os módulos `parser`, `auditor` e endpoints da API.
-- [ ] **Conteinerização Completa:** Criação de um `docker-compose.yml` isolando os serviços de API (FastAPI), Dashboard (Streamlit) e Servidor Web.
+- [ ] **Processamento Assíncrono em Lote:** Implementação de fila de tarefas (Celery + Redis ou FastAPI Background Tasks) para processamento de arquivos `.txt` com mais de 100 mil linhas sem o bloqueio da thread principal (*Event Loop*).
+- [ ] **Detecção de Anomalias Estatísticas (ML):** Introdução de algoritmos de agrupamento (*Isolation Forest* ou *Z-Score*) no módulo `auditor.py` para identificar padrões anômalos de fraude corporativa além das regras fixas de valor limite (*threshold*).
+- [ ] **Suíte de Testes Automatizados:** Implementação de testes unitários e de integração com `pytest` para aferição de robustez dos módulos `parser` e `auditor`.
 
 ---
 
 ## 🛠️ Como Executar o Projeto
 
 ### Pré-requisitos
-- Python 3.10+
-- Servidor local ou extensão **Live Server** no VS Code
+- Docker e Docker Desktop em execução.
 
-### 1. Iniciar a API Backend (FastAPI)
+### 1. Subir a Infraestrutura (Backend + Frontend)
+No terminal, a partir da raiz do projeto, execute:
 ```powershell
-# Ativar ambiente virtual e subir o servidor
-uvicorn api:app --reload
+docker compose up --build
