@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://variety-ambassador-respiratory-skiing.trycloudflare.com';
+const API_BASE_URL = 'https://bob-drama-scenarios-drawings.trycloudflare.com';
 
 let severityChartInstance = null;
 let amountChartInstance = null;
