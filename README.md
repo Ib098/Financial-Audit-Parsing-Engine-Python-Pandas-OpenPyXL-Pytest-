@@ -1,4 +1,3 @@
-```markdown
 # Financial Audit Engine
 
 Motor analítico para higienização, auditoria lógica e emissão de conformidade sobre lotes de transações financeiras brutas (.txt/.csv). 
