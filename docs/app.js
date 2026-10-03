@@ -1,11 +1,120 @@
-const API_BASE_URL = 'https://seemed-bush-attorneys-donated.trycloudflare.com';
+/**
+ * FINANCIAL AUDIT ENGINE (Client-Side Architecture)
+ * Este motor executa a ingestão, parsing, sanitização e auditoria estritamente na máquina cliente,
+ * neutralizando dependências de servidores backend, túneis de rede e CORS.
+ */
 
+// 1. MÓDULO DE PARSING E SANITIZAÇÃO
+class SnifferParser {
+    static detectDelimiter(sampleLines) {
+        const delimiters = [',', ';', '|', '\t'];
+        const text = sampleLines.join('\n');
+        let chosen = ',';
+        let maxCount = 0;
+
+        delimiters.forEach(delim => {
+            const count = (text.match(new RegExp(`\\${delim}`, 'g')) || []).length;
+            if (count > maxCount) {
+                maxCount = count;
+                chosen = delim;
+            }
+        });
+        return chosen;
+    }
+
+    static cleanCurrency(rawAmount) {
+        if (typeof rawAmount === 'number') return rawAmount;
+        let str = String(rawAmount || '').trim();
+        // Remoção de formatação monetária (ex: R$)
+        str = str.replace(/[R$\s]/g, '');
+        // Conversão de decimais (BR -> US)
+        if (str.includes(',') && str.includes('.')) {
+            str = str.replace(/\./g, '').replace(',', '.');
+        } else if (str.includes(',')) {
+            str = str.replace(',', '.');
+        }
+        const val = parseFloat(str);
+        return isNaN(val) ? 0.0 : val;
+    }
+
+    static parse(rawText) {
+        const lines = rawText.split(/\r?\n/).filter(line => line.trim().length > 0);
+        if (!lines.length) return [];
+
+        const delimiter = this.detectDelimiter(lines.slice(0, 5));
+        const records = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            const parts = lines[i].split(delimiter).map(p => p.trim());
+            
+            // Bypass para cabeçalhos baseados em heurística
+            if (i === 0 && (parts[0].toLowerCase().includes('id') || parts[0].toLowerCase().includes('data'))) {
+                continue;
+            }
+
+            if (parts.length >= 3) {
+                records.push({
+                    id: parts[0] || `TX-${i + 1}`,
+                    date: parts[1] || 'N/A',
+                    description: parts[2] || 'Sem Descrição',
+                    amount: this.cleanCurrency(parts[3] || 0)
+                });
+            }
+        }
+        return records;
+    }
+}
+
+// 2. MÓDULO DE AUDITORIA E COMPLIANCE
+class Auditor {
+    constructor(threshold = 3000.0) {
+        this.threshold = threshold;
+    }
+
+    audit(records) {
+        const idCounts = {};
+        records.forEach(r => { idCounts[r.id] = (idCounts[r.id] || 0) + 1; });
+
+        return records.map(record => {
+            const anomalies = [];
+            let severity = 'INFO';
+            let isFlagged = false;
+
+            if (Math.abs(record.amount) > this.threshold) {
+                anomalies.push(`Excede o limite operacional (> R$ ${this.threshold})`);
+                severity = 'CRITICAL';
+                isFlagged = true;
+            }
+
+            if (record.amount < 0) {
+                anomalies.push('Lançamento a débito ou estorno negativo detectado');
+                if (severity !== 'CRITICAL') severity = 'WARNING';
+                isFlagged = true;
+            }
+
+            if (idCounts[record.id] > 1) {
+                anomalies.push('Identificador de transação duplicado no lote');
+                if (severity !== 'CRITICAL') severity = 'WARNING';
+                isFlagged = true;
+            }
+
+            return {
+                ...record,
+                is_flagged: isFlagged,
+                severity: severity,
+                anomalies: anomalies
+            };
+        });
+    }
+}
+
+// 3. ORQUESTRADOR DA INTERFACE E RENDERIZAÇÃO
+let latestAuditedData = null;
 let severityChartInstance = null;
 let amountChartInstance = null;
 
 document.getElementById('auditForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const fileInput = document.getElementById('fileInput');
     const statusMsg = document.getElementById('statusMsg');
     const submitBtn = document.getElementById('submitBtn');
@@ -13,50 +122,57 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
     if (!fileInput.files.length) return;
 
     const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
-
     statusMsg.classList.remove('hidden', 'text-red-400', 'text-emerald-400');
     statusMsg.classList.add('text-slate-400');
-    statusMsg.textContent = 'Enviando arquivo e executando algoritmos de auditoria...';
+    statusMsg.textContent = 'Extraindo e processando dados em memória local...';
     submitBtn.disabled = true;
 
     try {
-        // O cabeçalho obsoleto do ngrok foi removido para garantir a integridade da requisição
-        const response = await fetch(`${API_BASE_URL}/api/v1/audit/process`, {
-            method: 'POST',
-            body: formData
-        });
-
-        const rawText = await response.text();
-        let result;
-
-        try {
-            result = JSON.parse(rawText);
-        } catch (jsonErr) {
-            throw new Error(`Resposta inválida do servidor (${response.status}): ${rawText.substring(0, 120)}`);
-        }
-
-        if (!response.ok) {
-            throw new Error(result.detail || `Erro HTTP ${response.status}`);
-        }
+        // Leitura síncrona na máquina cliente (sem requisições externas)
+        const text = await file.text();
+        
+        // Pipeline Local
+        const parsedData = SnifferParser.parse(text);
+        const auditor = new Auditor(3000.0);
+        latestAuditedData = auditor.audit(parsedData);
 
         statusMsg.classList.add('text-emerald-400');
-        statusMsg.textContent = `Arquivo ${result.filename} auditado com sucesso!`;
+        statusMsg.textContent = `Arquivo ${file.name} auditado com sucesso (Processamento Local)!`;
 
-        renderDashboard(result);
+        renderDashboard(latestAuditedData);
 
     } catch (error) {
         statusMsg.classList.add('text-red-400');
-        statusMsg.textContent = `Erro: ${error.message}`;
+        statusMsg.textContent = `Erro crítico no processamento: ${error.message}`;
     } finally {
         submitBtn.disabled = false;
     }
 });
 
-function renderDashboard(result) {
-    const data = result.data;
+// Configuração da Exportação de Excel nativa via SheetJS
+document.getElementById('downloadBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!latestAuditedData) return;
 
+    const rows = latestAuditedData.map(item => ({
+        "ID Transação": item.id,
+        "Data": item.date,
+        "Descrição": item.description,
+        "Valor Bruto": item.amount,
+        "Status": item.severity,
+        "Sinalizado": item.is_flagged ? 'SIM' : 'NÃO',
+        "Anomalias Encontradas": item.anomalies.join('; ')
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Auditoria Consolidada");
+    
+    // Dispara o download da planilha sem contato com servidor
+    XLSX.writeFile(workbook, "relatorio_auditado_client_side.xlsx");
+});
+
+function renderDashboard(data) {
     const sections = ['kpiSection', 'chartsSection', 'tableSection'];
     sections.forEach(id => {
         const el = document.getElementById(id);
@@ -64,18 +180,14 @@ function renderDashboard(result) {
         el.classList.add('animate-fade-in');
     });
 
-    const totalProc = result.total_records;
     const flagged = data.filter(item => item.is_flagged);
     const critical = data.filter(item => item.severity === 'CRITICAL');
     const riskVal = flagged.reduce((acc, item) => acc + Math.abs(item.amount), 0);
 
-    document.getElementById('kpiTotal').textContent = totalProc;
+    document.getElementById('kpiTotal').textContent = data.length;
     document.getElementById('kpiFlagged').textContent = flagged.length;
     document.getElementById('kpiCritical').textContent = critical.length;
     document.getElementById('kpiRisk').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(riskVal);
-
-    const downloadBtn = document.getElementById('downloadBtn');
-    downloadBtn.href = `${API_BASE_URL}${result.excel_report_url}`;
 
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
@@ -146,11 +258,7 @@ function renderCharts(data) {
                 borderWidth: 0
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
     });
 
     const ctx2 = document.getElementById('amountChart').getContext('2d');
@@ -165,12 +273,8 @@ function renderCharts(data) {
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
-                y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-            },
+            responsive: true, maintainAspectRatio: false,
+            scales: { x: { ticks: { color: '#94a3b8' }, grid: { display: false } }, y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } } },
             plugins: { legend: { display: false } }
         }
     });
