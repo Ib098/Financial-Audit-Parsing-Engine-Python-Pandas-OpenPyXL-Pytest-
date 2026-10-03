@@ -1,0 +1,23 @@
+[
+  {
+    "id": "FP-202609-001",
+    "date": "2026-09-30",
+    "description": "Salario Base - Funcionario 1042",
+    "amount": 7500.00,
+    "cost_center": "ENG_CORE"
+  },
+  {
+    "id": "FP-202609-002",
+    "date": "2026-09-30",
+    "description": "Horas Extras 100% - Funcionario 1042",
+    "amount": 8900.00,
+    "cost_center": "ENG_CORE"
+  },
+  {
+    "id": "FP-202609-003",
+    "date": "2026-09-30",
+    "description": "Salario Base - Funcionario 1042",
+    "amount": 7500.00,
+    "cost_center": "ENG_CORE"
+  }
+]

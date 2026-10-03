@@ -1,0 +1,6 @@
+ID|DATA|DESCRICAO|VALOR|CATEGORIA
+RB101|2026-09-01|Aluguel Veiculo Executivo|2950.00|Transporte
+RB102|2026-09-01|Seguro Adicional Frota|2900.00|Transporte
+RB103|2026-09-02|Hospedagem Equipe Projeto Alfa|4800.00|Hospedagem
+RB104|2026-09-03|Alimentacao Conferencia|180.50|Alimentacao
+RB105|2026-09-03|Alimentacao Conferencia|180.50|Alimentacao

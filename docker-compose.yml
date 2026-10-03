@@ -1,29 +1,31 @@
-version: '3.8'
-
 services:
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
+    build: .
     container_name: financial_audit_api
+    command: uvicorn api:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
-    restart: unless-stopped
+    volumes:
+      - .:/app
+      - ./data/uploads:/app/data/uploads
+      - ./data/output:/app/data/output
+    environment:
+      - PYTHONUNBUFFERED=1
     networks:
       - audit_network
 
-  dashboard:
-    build:
-      context: .
-      dockerfile: Dockerfile.streamlit
-    container_name: financial_audit_dashboard
+  streamlit:
+    build: .
+    container_name: financial_audit_streamlit
+    command: streamlit run app.py --server.port 8501 --server.address 0.0.0.0
     ports:
       - "8501:8501"
+    volumes:
+      - .:/app
     environment:
       - API_URL=http://api:8000
     depends_on:
       - api
-    restart: unless-stopped
     networks:
       - audit_network
 

@@ -1,7 +1,11 @@
+import os
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import requests
+
+# Lê a URL da rede do Docker ('http://api:8000') ou mantém o localhost na execução fora do container
+API_BASE_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 st.set_page_config(page_title="Financial Audit Dashboard", layout="wide", page_icon="📊")
 
@@ -17,11 +21,17 @@ if uploaded_file is not None:
         
         with st.spinner("Conectando à API REST e auditando lançamentos..."):
             try:
-                response = requests.post("http://127.0.0.1:8000/api/v1/audit/process", files=files)
+                response = requests.post(f"{API_BASE_URL}/api/v1/audit/process", files=files)
                 
                 if response.status_code == 200:
                     result = response.json()
                     records = result["data"]
+
+                    # BLOQUEIO DE SEGURANÇA: Impede KeyError caso o parser não consiga ler o arquivo
+                    if not records:
+                        st.error("❌ O arquivo foi processado, mas nenhum registro válido pôde ser extraído. Verifique a estrutura, o delimitador ou se o formato é legível.")
+                        st.stop()
+
                     df = pd.DataFrame(records)
 
                     st.success(f"Arquivo `{result['filename']}` processado com sucesso!")
@@ -68,7 +78,7 @@ if uploaded_file is not None:
                     # Download do Excel Gerado
                     st.markdown("---")
                     excel_name = result["excel_filename"]
-                    excel_url = f"http://127.0.0.1:8000/api/v1/audit/download/{excel_name}"
+                    excel_url = f"{API_BASE_URL}/api/v1/audit/download/{excel_name}"
                     st.download_button(
                         label="📥 Baixar Relatório Executivo Formatado (.xlsx)",
                         data=requests.get(excel_url).content,
@@ -85,6 +95,6 @@ if uploaded_file is not None:
                     st.error(f"Erro na API: {response.json().get('detail')}")
 
             except requests.exceptions.ConnectionError:
-                st.error("⚠️ Falha de conexão. Certifique-se de que a API FastAPI está em execução no terminal 1.")
+                st.error(f"⚠️ Falha de conexão com a API em `{API_BASE_URL}`.")
 else:
     st.info("👈 Faça o upload de um arquivo `.txt` ou `.csv` na barra lateral para iniciar a análise.")

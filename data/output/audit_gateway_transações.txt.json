@@ -1,0 +1,57 @@
+[
+    {
+        "line_number": 2,
+        "id": "GW-9821",
+        "date": "2026-10-01 02:14:10",
+        "description": "VENDA_CREDITO",
+        "amount": 1250.0,
+        "is_flagged": true,
+        "anomalies_count": 1,
+        "anomalies": "INVALID_DATE_FORMAT",
+        "severity": "CRITICAL"
+    },
+    {
+        "line_number": 3,
+        "id": "GW-9822",
+        "date": "2026-10-01 02:15:33",
+        "description": "VENDA_CREDITO",
+        "amount": 0.01,
+        "is_flagged": true,
+        "anomalies_count": 1,
+        "anomalies": "INVALID_DATE_FORMAT",
+        "severity": "CRITICAL"
+    },
+    {
+        "line_number": 4,
+        "id": "GW-9823",
+        "date": "2026-10-01 02:18:40",
+        "description": "ESTORNO",
+        "amount": -1250.0,
+        "is_flagged": true,
+        "anomalies_count": 2,
+        "anomalies": "SUSPICIOUS_NEGATIVE_VALUE, INVALID_DATE_FORMAT",
+        "severity": "CRITICAL"
+    },
+    {
+        "line_number": 5,
+        "id": "GW-9824",
+        "date": "2026-10-01 03:02:11",
+        "description": "VENDA_CREDITO",
+        "amount": 18900.0,
+        "is_flagged": true,
+        "anomalies_count": 2,
+        "anomalies": "HIGH_VALUE_EXCEEDED, INVALID_DATE_FORMAT",
+        "severity": "CRITICAL"
+    },
+    {
+        "line_number": 6,
+        "id": "GW-9825",
+        "date": "2026-10-01 08:30:00",
+        "description": "VENDA_PIX",
+        "amount": 340.0,
+        "is_flagged": true,
+        "anomalies_count": 1,
+        "anomalies": "INVALID_DATE_FORMAT",
+        "severity": "CRITICAL"
+    }
+]

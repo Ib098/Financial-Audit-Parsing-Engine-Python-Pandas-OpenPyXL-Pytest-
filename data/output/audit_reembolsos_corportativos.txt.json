@@ -1,0 +1,57 @@
+[
+    {
+        "line_number": 2,
+        "id": "RB101",
+        "date": "2026-09-01",
+        "description": "Aluguel Veiculo Executivo",
+        "amount": 2950.0,
+        "is_flagged": false,
+        "anomalies_count": 0,
+        "anomalies": "OK",
+        "severity": "INFO"
+    },
+    {
+        "line_number": 3,
+        "id": "RB102",
+        "date": "2026-09-01",
+        "description": "Seguro Adicional Frota",
+        "amount": 2900.0,
+        "is_flagged": false,
+        "anomalies_count": 0,
+        "anomalies": "OK",
+        "severity": "INFO"
+    },
+    {
+        "line_number": 4,
+        "id": "RB103",
+        "date": "2026-09-02",
+        "description": "Hospedagem Equipe Projeto Alfa",
+        "amount": 4800.0,
+        "is_flagged": true,
+        "anomalies_count": 1,
+        "anomalies": "HIGH_VALUE_EXCEEDED",
+        "severity": "WARNING"
+    },
+    {
+        "line_number": 5,
+        "id": "RB104",
+        "date": "2026-09-03",
+        "description": "Alimentacao Conferencia",
+        "amount": 180.5,
+        "is_flagged": false,
+        "anomalies_count": 0,
+        "anomalies": "OK",
+        "severity": "INFO"
+    },
+    {
+        "line_number": 6,
+        "id": "RB105",
+        "date": "2026-09-03",
+        "description": "Alimentacao Conferencia",
+        "amount": 180.5,
+        "is_flagged": true,
+        "anomalies_count": 1,
+        "anomalies": "SUSPICIOUS_DUPLICATE_PAYLOAD",
+        "severity": "WARNING"
+    }
+]

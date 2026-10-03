@@ -50,8 +50,8 @@
         "description": "Lancamento Nulo",
         "amount": 0.0,
         "is_flagged": true,
-        "anomalies_count": 2,
-        "anomalies": "ZERO_VALUE_TRANSACTION, FUTURE_DATE_TRANSACTION",
+        "anomalies_count": 1,
+        "anomalies": "ZERO_VALUE_TRANSACTION",
         "severity": "WARNING"
     }
 ]
