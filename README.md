@@ -1,4 +1,3 @@
-```markdown
 # Financial Audit & Parsing Engine
 
 ![Status](https://img.shields.io/badge/Status-Finalizado-success?style=for-the-badge)
@@ -144,4 +143,4 @@ Na operação via web estática, nenhuma linha de dados é transmitida por redes
 
 ```
 
-```
+``
