@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://bob-drama-scenarios-drawings.trycloudflare.com';
+const API_BASE_URL = 'https://fitness-flu-ecommerce-barbie.trycloudflare.com/';
 
 let severityChartInstance = null;
 let amountChartInstance = null;
