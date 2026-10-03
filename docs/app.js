@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://seemed-bush-attorneys-donated.trycloudflare.com/';
+const API_BASE_URL = 'https://seemed-bush-attorneys-donated.trycloudflare.com';
 
 let severityChartInstance = null;
 let amountChartInstance = null;
