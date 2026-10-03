@@ -17,7 +17,12 @@ app = FastAPI(
 # Liberação de CORS para permitir requisições do GitHub Pages
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    # Declaração explícita das origens confiáveis (remove o curinga "*")
+    allow_origins=[
+        "https://ib098.github.io",  # Cliente Web Público
+        "http://localhost:8501",    # Dashboard Streamlit Local
+        "http://127.0.0.1:5500"     # Live Server (Desenvolvimento)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
