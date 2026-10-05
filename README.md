@@ -19,6 +19,14 @@ Acesse a aplicação em produção contínua via GitHub Pages (processamento 100
 
 ---
 
+## ⚖️ Decisões de Engenharia & Trade-offs
+
+* **Pandas vs. OpenPyXL:** O processamento em vetor e a sanitização inicial ocorrem via Pandas pela performance de manipulação matricial em memória. O OpenPyXL foi reservado estritamente para a geração do relatório final, assegurando preservação de tipos nativos de células numéricas, larguras de coluna e estética corporativa executiva.
+* **Transição Serverless (Client-Side) vs. Microserviço:** O backend Python conteinerizado em Docker atende a pipelines assíncronos e processamentos pesados de lote via API. Contudo, para a demonstração pública em produção, a lógica foi portada para execução em memória volátil via JavaScript/SheetJS no navegador. Isso elimina pontos únicos de falha de rede (CORS/túneis), zera custos de infraestrutura e cumpre os requisitos de privacidade ao reter zero dados nos servidores (*Zero-Data Retention*).
+* **Resiliência Heurística do Parser:** Em vez de forçar um esquema estrito pré-definido, o motor avalia a densidade de separadores nos primeiros registros (`Sniffer`), tolerando inconsistências típicas de exportações legadas de ERPs bancários.
+
+---
+
 ### ⚙️ Regras de Auditoria
 
 | Severidade | Regra Aplicada |
