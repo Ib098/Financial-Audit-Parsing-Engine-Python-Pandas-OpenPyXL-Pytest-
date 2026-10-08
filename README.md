@@ -6,16 +6,30 @@ Resolve inconsistências de delimitadores e formatações monetárias heterogên
 
 ---
 
-### 🌐 Demonstração Online (Client-Side)
-Acesse a aplicação em produção contínua via GitHub Pages (processamento 100% em memória no navegador, com custo zero de infraestrutura e privacidade total dos dados):
-👉 **[Acessar Web Console](https://ib098.github.io/Financial-Audit-Parsing-Engine-Python-Pandas-OpenPyXL-Pytest-/)**
+## 🎓 Fundamentação Acadêmica e Adoção Tecnológica
+
+Este projeto foi concebido como um laboratório de engenharia aplicado para materializar e expandir os fundamentos de Ciência da Computação adquiridos até ao 3º período do curso de Engenharia de Software. 
+
+A construção do ecossistema operou sob o paradigma moderno de **Desenvolvimento Assistido por Inteligência Artificial**. Modelos generativos (LLMs) foram utilizados de forma orquestrada como aceleradores para estruturação sintática (boilerplate) e resolução de entraves de integração. No entanto, a espinha dorsal da aplicação — a modelação matemática do problema, a definição dos *trade-offs* arquiteturais e as restrições lógicas — assenta integralmente nos pilares teóricos da formação acadêmica:
+
+### 1. Aplicação de Conceitos Curriculares
+* **Complexidade Assintótica e Estruturas de Dados:** O algoritmo de *parsing* e sanitização foi arquitetado com foco na otimização de tempo de execução, garantindo uma varredura linear $\mathcal{O}(n)$ sobre os lotes de transações. O domínio sobre alocação de memória dinâmica e tipos heterogêneos (consolidados na aprendizagem de C/C++) permitiu conceber um motor seguro para processamento de *arrays* volumosos diretamente na memória volátil do navegador, mitigando riscos de fragmentação[cite: 12].
+* **Pensamento Computacional e Modularização:** O motor lógico foi decomposto em entidades isoladas (*Parser*, *Auditor*, *Reporter*), aplicando princípios estritos de coesão, encapsulamento e passagem controlada de parâmetros, fundamentos absorvidos nas disciplinas de Programação e Arquitetura de Subprogramas[cite: 12].
+* **Redes e Protocolos de Comunicação:** A compreensão teórica da pilha TCP/IP, métodos HTTP (Request/Response) e serialização JSON[cite: 12] foi imperativa para diagnosticar falhas de roteamento, suprimir anomalias de CORS e viabilizar a transição madura do microsserviço original para a topologia estática *Client-Side*.
+* **Linguagens e Interfaces:** Aplicação prática e avançada da mecânica do Python (estruturas de repetição, manipulação de exceções e POO) e das linguagens web estruturais (manipulação do DOM via JavaScript ES6+, HTML5 e CSS3)[cite: 12].
+
+### 2. Expansão Extracurricular
+Para garantir que a solução não seria apenas um protótipo acadêmico, mas um produto corporativo de alta disponibilidade, incorporei autonomamente tecnologias externas à grade curricular atual:
+* **Backend de Alta Performance:** Adoção do *FastAPI* e *Uvicorn* (arquitetura assíncrona) em contraste com frameworks web procedurais clássicos.
+* **Infraestrutura e DevOps:** Implementação de conteinerização através do *Docker* e *Docker Compose*, assegurando isolamento de dependências e paridade entre os ambientes de desenvolvimento e produção.
+* **Ecossistema Frontend Moderno:** Substituição de CSS e *Bootstrap* pelo *Tailwind CSS* (abordagem baseada em classes utilitárias) para compilação visual responsiva. Integração da biblioteca *SheetJS* para viabilizar a exportação nativa de relatórios binários `.xlsx` sem intervenção de servidores.
+* **Observabilidade:** Utilização do *Streamlit* para renderização rápida de *dashboards* e ferramentas de telemetria analítica no nó Python.
 
 ---
 
-### 🏛️ Arquitetura do Sistema
-
-* **Client-Side Engine (`/docs`):** Interface estática em Tailwind CSS que executa o pipeline em memória volátil via JavaScript nativo, gerando relatórios `.xlsx` em tempo de execução via SheetJS.
-* **Backend Core (`/src` & `api.py`):** Microsserviço assíncrono em Python (FastAPI) com regras contábeis, documentação OpenAPI e dashboard interativo em Streamlit.
+### 🌐 Demonstração Online (Client-Side)
+Acesse a aplicação em produção contínua via GitHub Pages (processamento 100% em memória no navegador, com custo zero de infraestrutura e privacidade total dos dados):
+👉 **[Acessar Web Console](https://ib098.github.io/Financial-Audit-Parsing-Engine-Python-Pandas-OpenPyXL-Pytest-/)**
 
 ---
 
